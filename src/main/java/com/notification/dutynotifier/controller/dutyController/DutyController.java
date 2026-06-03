@@ -1,8 +1,9 @@
 package com.notification.dutynotifier.controller.dutyController;
 
-import com.notification.dutynotifier.bot.DutyBot;
 import com.notification.dutynotifier.dto.dutyRequest.DutyRequest;
 import com.notification.dutynotifier.entity.duty.Duty;
+import com.notification.dutynotifier.service.DutyMessageService;
+import com.notification.dutynotifier.service.ExcelImportService;
 import com.notification.dutynotifier.service.dutyService.DutyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,14 +19,11 @@ import java.util.List;
 public class DutyController {
 
     private final DutyService dutyService;
-    private final DutyBot dutyBot;
-
+    private final DutyMessageService dutyMessageService;
+    private final ExcelImportService excelImportService;
 
     @PostMapping
-    public Duty create(
-            @RequestBody
-            @Valid
-            DutyRequest request) {
+    public Duty create(@RequestBody @Valid DutyRequest request) {
         return dutyService.create(request);
     }
 
@@ -43,34 +41,19 @@ public class DutyController {
     public List<Duty> getNext5() {
         return dutyService.getNext5Days();
     }
+
     @GetMapping("/message")
     public String message() {
-        return dutyService.buildMessage();
+        return dutyMessageService.buildMessage();
     }
 
     @PostMapping(
             value = "/upload",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 
-    public String upload(
-            @RequestParam("file")
-            MultipartFile file
-    ) {
-
-        dutyService.importExcel(file);
+    public String upload(@RequestParam("file") MultipartFile file) {
+        excelImportService.importExcel(file);
 
         return "Schedule uploaded";
     }
-
-    @GetMapping("/send")
-    public String send() {
-
-        dutyBot.sendMessage(
-                508025069L,
-                dutyService.buildMessage());
-
-        return "sent";
-    }
-
 }

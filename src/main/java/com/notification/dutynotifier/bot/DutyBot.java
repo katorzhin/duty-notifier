@@ -3,7 +3,7 @@ package com.notification.dutynotifier.bot;
 import com.notification.dutynotifier.config.TelegramConfig;
 import com.notification.dutynotifier.entity.Subscriber;
 import com.notification.dutynotifier.repository.SubscriberRepository;
-import com.notification.dutynotifier.service.dutyService.DutyService;
+import com.notification.dutynotifier.service.DutyMessageService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
@@ -13,22 +13,19 @@ import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 @Component
-//@RequiredArgsConstructor
 public class DutyBot implements SpringLongPollingBot {
 
     private final TelegramConfig config;
     private final TelegramClient telegramClient;
     private final SubscriberRepository subscriberRepository;
-    private final DutyService dutyService;
+    private final DutyMessageService dutyMessageService;
 
     public DutyBot(TelegramConfig config,
                    SubscriberRepository subscriberRepository,
-                   DutyService dutyService) {
+                   DutyMessageService dutyMessageService) {
         this.config = config;
         this.subscriberRepository = subscriberRepository;
-        this.dutyService = dutyService;
-        System.out.println("TOKEN = " + config.getToken());
-        System.out.println("USERNAME = " + config.getUsername());
+        this.dutyMessageService = dutyMessageService;
         this.telegramClient = new OkHttpTelegramClient(config.getToken());
     }
 
@@ -63,44 +60,17 @@ public class DutyBot implements SpringLongPollingBot {
                                         .build());
                     }
 
-                    if ("/start".equals(text)) {
+                    switch (text) {
 
-                        sendMessage(
-                                chatId,
-                                """
-                                        👋 Вітаю!
-                                        
-                                        Доступні команди:
-                                        
-                                        /today - хто чергує сьогодні
-                                        
-                                        /schedule - графік на найближчі дні
-                                        
-                                        /help - допомога
-                                        """
-                        );
-                    }
+                        case "/start" -> sendStartMessage(chatId);
 
-                    if ("/schedule".equals(text)) {
-                        sendMessage(chatId, dutyService.buildMessage());
-                    }
+                        case "/schedule" -> sendMessage(chatId, dutyMessageService.buildMessage());
 
-                    if ("/help".equals(text)) {
+                        case "/today" -> sendMessage(chatId, dutyMessageService.buildTodayMessage());
 
-                        sendMessage(
-                                chatId,
-                                """
-                                        Доступні команди:
-                                        
-                                        /today
-                                        /schedule
-                                        /help
-                                        """
-                        );
-                    }
+                        case "/help" -> sendHelpMessage(chatId);
 
-                    if ("/today".equals(text)) {
-                        sendMessage(chatId, dutyService.buildTodayMessage());
+                        default -> sendMessage(chatId, "Невідома команда. Використайте /help");
                     }
 
                     System.out.println(
@@ -122,11 +92,41 @@ public class DutyBot implements SpringLongPollingBot {
                         .build();
 
         try {
-
             telegramClient.execute(message);
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void sendStartMessage(Long chatId) {
+
+        sendMessage(
+                chatId,
+                """
+                        👋 Вітаю!
+                        
+                        Доступні команди:
+                        
+                        /today - хто чергує сьогодні
+                        
+                        /schedule - графік на найближчі дні
+                        
+                        /help - допомога
+                        """
+        );
+    }
+
+    private void sendHelpMessage(Long chatId) {
+
+        sendMessage(
+                chatId,
+                """
+                        Доступні команди:
+                        
+                        /today
+                        /schedule
+                        /help
+                        """
+        );
     }
 }
