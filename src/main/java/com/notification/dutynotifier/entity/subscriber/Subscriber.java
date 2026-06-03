@@ -1,4 +1,4 @@
-package com.notification.dutynotifier.entity;
+package com.notification.dutynotifier.entity.subscriber;
 
 import jakarta.persistence.*;
 import lombok.*;

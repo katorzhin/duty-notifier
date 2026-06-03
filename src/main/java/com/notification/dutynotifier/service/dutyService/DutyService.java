@@ -2,9 +2,9 @@ package com.notification.dutynotifier.service.dutyService;
 
 import com.notification.dutynotifier.dto.dutyRequest.DutyRequest;
 import com.notification.dutynotifier.entity.duty.Duty;
-import com.notification.dutynotifier.entity.User;
+import com.notification.dutynotifier.entity.user.User;
 import com.notification.dutynotifier.repository.dutyRepository.DutyRepository;
-import com.notification.dutynotifier.repository.UserRepository;
+import com.notification.dutynotifier.repository.userRepository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;

@@ -1,8 +1,8 @@
-package com.notification.dutynotifier.service;
+package com.notification.dutynotifier.service.excelImportService;
 
-import com.notification.dutynotifier.entity.User;
+import com.notification.dutynotifier.entity.user.User;
 import com.notification.dutynotifier.entity.duty.Duty;
-import com.notification.dutynotifier.repository.UserRepository;
+import com.notification.dutynotifier.repository.userRepository.UserRepository;
 import com.notification.dutynotifier.repository.dutyRepository.DutyRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;

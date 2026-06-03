@@ -1,4 +1,4 @@
-package com.notification.dutynotifier.dto;
+package com.notification.dutynotifier.dto.userRequest;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

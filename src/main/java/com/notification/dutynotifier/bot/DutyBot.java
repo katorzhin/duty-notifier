@@ -1,9 +1,9 @@
 package com.notification.dutynotifier.bot;
 
 import com.notification.dutynotifier.config.TelegramConfig;
-import com.notification.dutynotifier.entity.Subscriber;
-import com.notification.dutynotifier.repository.SubscriberRepository;
-import com.notification.dutynotifier.service.DutyMessageService;
+import com.notification.dutynotifier.entity.subscriber.Subscriber;
+import com.notification.dutynotifier.repository.subscriberRepository.SubscriberRepository;
+import com.notification.dutynotifier.service.dutyMessageService.DutyMessageService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;

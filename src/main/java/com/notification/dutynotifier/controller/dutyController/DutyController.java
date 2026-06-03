@@ -2,8 +2,8 @@ package com.notification.dutynotifier.controller.dutyController;
 
 import com.notification.dutynotifier.dto.dutyRequest.DutyRequest;
 import com.notification.dutynotifier.entity.duty.Duty;
-import com.notification.dutynotifier.service.DutyMessageService;
-import com.notification.dutynotifier.service.ExcelImportService;
+import com.notification.dutynotifier.service.dutyMessageService.DutyMessageService;
+import com.notification.dutynotifier.service.excelImportService.ExcelImportService;
 import com.notification.dutynotifier.service.dutyService.DutyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

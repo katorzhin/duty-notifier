@@ -1,8 +1,9 @@
-package com.notification.dutynotifier.service;
+package com.notification.dutynotifier.service.dutyNotificationScheduler;
 
 import com.notification.dutynotifier.bot.DutyBot;
-import com.notification.dutynotifier.entity.Subscriber;
-import com.notification.dutynotifier.repository.SubscriberRepository;
+import com.notification.dutynotifier.entity.subscriber.Subscriber;
+import com.notification.dutynotifier.repository.subscriberRepository.SubscriberRepository;
+import com.notification.dutynotifier.service.dutyMessageService.DutyMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

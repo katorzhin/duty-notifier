@@ -1,6 +1,6 @@
-package com.notification.dutynotifier.repository;
+package com.notification.dutynotifier.repository.userRepository;
 
-import com.notification.dutynotifier.entity.User;
+import com.notification.dutynotifier.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

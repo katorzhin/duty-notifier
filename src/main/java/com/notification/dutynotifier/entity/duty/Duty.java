@@ -1,6 +1,6 @@
 package com.notification.dutynotifier.entity.duty;
 
-import com.notification.dutynotifier.entity.User;
+import com.notification.dutynotifier.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 

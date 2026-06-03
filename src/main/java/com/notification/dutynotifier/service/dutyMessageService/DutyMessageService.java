@@ -1,6 +1,6 @@
-package com.notification.dutynotifier.service;
+package com.notification.dutynotifier.service.dutyMessageService;
 
-import com.notification.dutynotifier.entity.User;
+import com.notification.dutynotifier.entity.user.User;
 import com.notification.dutynotifier.entity.duty.Duty;
 import com.notification.dutynotifier.service.dutyService.DutyService;
 import lombok.RequiredArgsConstructor;
