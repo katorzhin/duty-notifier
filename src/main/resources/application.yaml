@@ -1,0 +1,25 @@
+spring:
+
+  application:
+    name: pet-project-schedule
+
+  datasource:
+   url: jdbc:postgresql://localhost:5432/duty_db
+   username: postgres
+   password: postgres
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+     hibernate.jdbc.time_zone: Europe/Kyiv
+
+    hibernate:
+      ddl-auto: update
+
+    show-sql: true
+
+telegram:
+   bot:
+    username: DutyPluuuuus_bot
+    token: 8863360818:AAFhDTRQd4N_pfC221ONQqD0eLSyIef2z50
+kind: Application

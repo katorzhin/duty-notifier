@@ -1,0 +1,41 @@
+services:
+
+  postgres:
+
+    image: postgres:16
+
+    container_name: duty_postgres
+
+    restart: always
+
+    environment:
+      POSTGRES_DB: duty_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  duty-app:
+
+    build: .
+
+    container_name: duty_app
+
+    restart: always
+
+    depends_on:
+      - postgres
+
+    ports:
+      - "8081:8080"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/duty_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+volumes:
+  postgres_data:
