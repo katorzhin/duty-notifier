@@ -1,7 +1,7 @@
 package com.notification.dutynotifier.controller.dutyController;
 
 import com.notification.dutynotifier.dto.dutyRequest.DutyRequest;
-import com.notification.dutynotifier.entity.duty.Duty;
+import com.notification.dutynotifier.dto.response.DutyResponse;
 import com.notification.dutynotifier.service.dutyMessageService.DutyMessageService;
 import com.notification.dutynotifier.service.excelImportService.ExcelImportService;
 import com.notification.dutynotifier.service.dutyService.DutyService;
@@ -23,22 +23,22 @@ public class DutyController {
     private final ExcelImportService excelImportService;
 
     @PostMapping
-    public Duty create(@RequestBody @Valid DutyRequest request) {
+    public DutyResponse create(@RequestBody @Valid DutyRequest request) {
         return dutyService.create(request);
     }
 
     @GetMapping
-    public List<Duty> getAll() {
+    public List<DutyResponse> getAll() {
         return dutyService.getAll();
     }
 
     @GetMapping("/today")
-    public List<Duty> getToday() {
+    public List<DutyResponse> getToday() {
         return dutyService.getTodayDuty();
     }
 
     @GetMapping("/next5")
-    public List<Duty> getNext5() {
+    public List<DutyResponse> getNext5() {
         return dutyService.getNext5Days();
     }
 

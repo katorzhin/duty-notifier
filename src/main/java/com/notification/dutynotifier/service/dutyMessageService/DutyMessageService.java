@@ -18,8 +18,8 @@ public class DutyMessageService {
 
     public String buildMessage() {
 
-        List<Duty> today = dutyService.getTodayDuty();
-        List<Duty> next = dutyService.getNext5Days();
+        List<Duty> today = dutyService.findTodayDuties();
+        List<Duty> next = dutyService.findNext5DayDuties();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
@@ -62,7 +62,7 @@ public class DutyMessageService {
 
     public String buildTodayMessage() {
 
-        List<Duty> today = dutyService.getTodayDuty();
+        List<Duty> today = dutyService.findTodayDuties();
 
         StringBuilder message = new StringBuilder();
 
