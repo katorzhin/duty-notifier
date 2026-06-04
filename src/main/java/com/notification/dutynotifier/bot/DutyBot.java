@@ -4,6 +4,7 @@ import com.notification.dutynotifier.config.TelegramConfig;
 import com.notification.dutynotifier.entity.subscriber.Subscriber;
 import com.notification.dutynotifier.repository.subscriberRepository.SubscriberRepository;
 import com.notification.dutynotifier.service.dutyMessageService.DutyMessageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
@@ -12,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+@Slf4j
 @Component
 public class DutyBot implements SpringLongPollingBot {
 
@@ -58,6 +60,7 @@ public class DutyBot implements SpringLongPollingBot {
                                                 .getFrom()
                                                 .getLastName())
                                         .build());
+                        log.info("New subscriber registered. chatId={}", chatId);
                     }
 
                     switch (text) {
@@ -73,11 +76,7 @@ public class DutyBot implements SpringLongPollingBot {
                         default -> sendMessage(chatId, "Невідома команда. Використайте /help");
                     }
 
-                    System.out.println(
-                            "Message: " + update.getMessage().getText());
-
-                    System.out.println(
-                            "ChatId: " + chatId);
+                    log.info("Received message '{}' from chatId={}", update.getMessage().getText(), chatId);
                 }
             }
         };
@@ -94,6 +93,7 @@ public class DutyBot implements SpringLongPollingBot {
         try {
             telegramClient.execute(message);
         } catch (Exception e) {
+            log.error("Failed to send telegram message to chatId={}", chatId, e);
             throw new RuntimeException(e);
         }
     }
