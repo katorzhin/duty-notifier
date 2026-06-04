@@ -85,15 +85,4 @@ public class ExcelImportService {
             throw new RuntimeException(e);
         }
     }
-
-    private User getOrCreateUser(String name) {
-
-        return userRepository.findByName(name)
-                .orElseGet(() ->
-                        userRepository.save(
-                                User.builder()
-                                        .name(name)
-                                        .build()
-                        ));
-    }
 }

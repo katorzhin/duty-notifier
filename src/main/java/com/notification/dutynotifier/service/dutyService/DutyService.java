@@ -4,6 +4,7 @@ import com.notification.dutynotifier.dto.dutyRequest.DutyRequest;
 import com.notification.dutynotifier.dto.response.DutyResponse;
 import com.notification.dutynotifier.entity.duty.Duty;
 import com.notification.dutynotifier.entity.user.User;
+import com.notification.dutynotifier.exception.UserNotFoundException;
 import com.notification.dutynotifier.mapper.DutyMapper;
 import com.notification.dutynotifier.repository.dutyRepository.DutyRepository;
 import com.notification.dutynotifier.repository.userRepository.UserRepository;
@@ -23,7 +24,7 @@ public class DutyService {
 
     public DutyResponse create(DutyRequest request) {
 
-        List<User> users = userRepository.findAllById(request.getUserIds());
+        List<User> users = getUsers(request.getUserIds());
 
         Duty duty = Duty.builder()
                 .users(users)
@@ -31,7 +32,18 @@ public class DutyService {
                 .build();
 
         Duty savedDuty = dutyRepository.save(duty);
+
         return dutyMapper.toResponse(savedDuty);
+    }
+
+    private List<User> getUsers(List<Long> userIds) {
+        List<User> users = userRepository.findAllById(userIds);
+
+        if (users.size() != userIds.size()) {
+            throw new UserNotFoundException("Some users were not found");
+        }
+
+        return users;
     }
 
     public List<DutyResponse> getAll() {
