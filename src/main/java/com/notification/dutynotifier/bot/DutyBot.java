@@ -3,7 +3,6 @@ package com.notification.dutynotifier.bot;
 import com.notification.dutynotifier.config.TelegramConfig;
 import com.notification.dutynotifier.entity.subscriber.Subscriber;
 import com.notification.dutynotifier.repository.subscriberRepository.SubscriberRepository;
-import com.notification.dutynotifier.service.dutyMessageService.DutyMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
@@ -20,14 +19,14 @@ public class DutyBot implements SpringLongPollingBot {
     private final TelegramConfig config;
     private final TelegramClient telegramClient;
     private final SubscriberRepository subscriberRepository;
-    private final DutyMessageService dutyMessageService;
+    private final BotCommandService botCommandService;
 
     public DutyBot(TelegramConfig config,
                    SubscriberRepository subscriberRepository,
-                   DutyMessageService dutyMessageService) {
+                   BotCommandService botCommandService) {
         this.config = config;
         this.subscriberRepository = subscriberRepository;
-        this.dutyMessageService = dutyMessageService;
+        this.botCommandService = botCommandService;
         this.telegramClient = new OkHttpTelegramClient(config.getToken());
     }
 
@@ -42,41 +41,21 @@ public class DutyBot implements SpringLongPollingBot {
         return updates -> {
 
             for (Update update : updates) {
-                if (update.hasMessage()) {
+                if (update.hasMessage() && update.getMessage().hasText()) {
 
                     Long chatId = update.getMessage().getChatId();
                     String text = update.getMessage().getText();
 
                     if (subscriberRepository.findByChatId(chatId).isEmpty()) {
 
-                        subscriberRepository.save(
-                                Subscriber.builder()
-                                        .chatId(chatId)
-                                        .username(update.getMessage()
-                                                .getFrom()
-                                                .getUserName())
-                                        .firstName(update.getMessage().getFrom().getFirstName())
-                                        .lastName(update.getMessage()
-                                                .getFrom()
-                                                .getLastName())
-                                        .build());
+                        subscriberRepository.save(buildSubscriber(update, chatId));
+
                         log.info("New subscriber registered. chatId={}", chatId);
                     }
+                    String response = botCommandService.processCommand(text);
+                    sendMessage(chatId, response);
 
-                    switch (text) {
-
-                        case "/start" -> sendStartMessage(chatId);
-
-                        case "/schedule" -> sendMessage(chatId, dutyMessageService.buildMessage());
-
-                        case "/today" -> sendMessage(chatId, dutyMessageService.buildTodayMessage());
-
-                        case "/help" -> sendHelpMessage(chatId);
-
-                        default -> sendMessage(chatId, "Невідома команда. Використайте /help");
-                    }
-
-                    log.info("Received message '{}' from chatId={}", update.getMessage().getText(), chatId);
+                    log.info("Received message '{}' from chatId={}", text, chatId);
                 }
             }
         };
@@ -84,11 +63,10 @@ public class DutyBot implements SpringLongPollingBot {
 
     public void sendMessage(Long chatId, String text) {
 
-        SendMessage message =
-                SendMessage.builder()
-                        .chatId(chatId)
-                        .text(text)
-                        .build();
+        SendMessage message = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .build();
 
         try {
             telegramClient.execute(message);
@@ -98,35 +76,16 @@ public class DutyBot implements SpringLongPollingBot {
         }
     }
 
-    private void sendStartMessage(Long chatId) {
-
-        sendMessage(
-                chatId,
-                """
-                        👋 Вітаю!
-                        
-                        Доступні команди:
-                        
-                        /today - хто чергує сьогодні
-                        
-                        /schedule - графік на найближчі дні
-                        
-                        /help - допомога
-                        """
-        );
-    }
-
-    private void sendHelpMessage(Long chatId) {
-
-        sendMessage(
-                chatId,
-                """
-                        Доступні команди:
-                        
-                        /today
-                        /schedule
-                        /help
-                        """
-        );
+    private Subscriber buildSubscriber(Update update, Long chatId) {
+        return Subscriber.builder()
+                .chatId(chatId)
+                .username(update.getMessage()
+                        .getFrom()
+                        .getUserName())
+                .firstName(update.getMessage().getFrom().getFirstName())
+                .lastName(update.getMessage()
+                        .getFrom()
+                        .getLastName())
+                .build();
     }
 }
