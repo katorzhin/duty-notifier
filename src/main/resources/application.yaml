@@ -21,5 +21,5 @@ spring:
 telegram:
    bot:
     username: DutyPluuuuus_bot
-    token: 8863360818:AAFhDTRQd4N_pfC221ONQqD0eLSyIef2z50
+    token:
 kind: Application
