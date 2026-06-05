@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -34,55 +35,57 @@ public class ExcelImportService {
             dutyRepository.deleteAll();
 
             for (Row row : sheet) {
-
-                if (row.getCell(0) == null) {
+                if (isEmptyRow(row)) {
                     continue;
                 }
 
-                if (row.getCell(0).getCellType().name().equals("BLANK")) {
-                    continue;
-                }
+                Duty duty = buildDuty(row);
 
-                LocalDate dutyDate =
-                        row.getCell(0)
-                                .getDateCellValue()
-                                .toInstant()
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate();
-
-                String firstUserName = row.getCell(1)
-                        .getStringCellValue()
-                        .trim();
-
-                String secondUserName = row.getCell(2)
-                        .getStringCellValue()
-                        .trim();
-
-                User firstUser =
-                        userRepository.findByName(firstUserName)
-                                .orElseGet(() ->
-                                        userRepository.save(
-                                                User.builder()
-                                                        .name(firstUserName)
-                                                        .build()));
-
-                User secondUser =
-                        userRepository.findByName(secondUserName)
-                                .orElseGet(() ->
-                                        userRepository.save(
-                                                User.builder()
-                                                        .name(secondUserName)
-                                                        .build()));
-
-                Duty duty = Duty.builder()
-                        .dutyDate(dutyDate)
-                        .users(List.of(firstUser, secondUser))
-                        .build();
                 dutyRepository.save(duty);
             }
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private LocalDate extractDate(Row row) {
+        return row.getCell(0)
+                .getDateCellValue()
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+    }
+
+    private User getOrCreateUser(String userName) {
+        return userRepository.findByName(userName)
+                .orElseGet(() -> userRepository
+                        .save(User.builder()
+                                .name(userName)
+                                .build()));
+    }
+
+    private Duty buildDuty(Row row) {
+        LocalDate dutyDate = extractDate(row);
+
+        User firstUser = getOrCreateUser(row.getCell(1)
+                .getStringCellValue()
+                .trim());
+
+        User secondUser = getOrCreateUser(row.getCell(2)
+                .getStringCellValue()
+                .trim());
+
+        return Duty.builder()
+                .dutyDate(dutyDate)
+                .users(List.of(firstUser, secondUser))
+                .build();
+    }
+
+    private boolean isEmptyRow(Row row) {
+        if (row.getCell(0) == null) {
+            return true;
+        }
+        return row.getCell(0).getCellType().name().equals("BLANK");
     }
 }
