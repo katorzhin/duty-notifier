@@ -1,4 +1,4 @@
-package com.notification.dutynotifier.service.dutyService;
+package com.notification.dutynotifier.service.dutyService.dutyService;
 
 import com.notification.dutynotifier.dto.dutyRequest.DutyRequest;
 import com.notification.dutynotifier.dto.response.DutyResponse;
@@ -8,6 +8,7 @@ import com.notification.dutynotifier.exception.UserNotFoundException;
 import com.notification.dutynotifier.mapper.DutyMapper;
 import com.notification.dutynotifier.repository.dutyRepository.DutyRepository;
 import com.notification.dutynotifier.repository.userRepository.UserRepository;
+import com.notification.dutynotifier.service.dutyService.DutyService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
