@@ -19,7 +19,7 @@ public class DutyMessageService {
     public String buildMessage() {
 
         List<Duty> today = dutyService.findTodayDuties();
-        List<Duty> next = dutyService.findNext5DayDuties();
+        List<Duty> next = dutyService.findNext3DayDuties();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 

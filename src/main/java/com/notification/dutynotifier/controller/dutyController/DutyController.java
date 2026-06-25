@@ -7,9 +7,13 @@ import com.notification.dutynotifier.service.excelImportService.ExcelImportServi
 import com.notification.dutynotifier.service.dutyService.DutyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -28,8 +32,21 @@ public class DutyController {
     }
 
     @GetMapping
-    public List<DutyResponse> getAll() {
-        return dutyService.getAll();
+    public Page<DutyResponse> getAll(@PageableDefault(
+            sort = "dutyDate",
+            direction = Sort.Direction.DESC)
+                                     Pageable pageable) {
+        return dutyService.getAll(pageable);
+    }
+
+    @PutMapping("/{id}")
+    public DutyResponse update(@PathVariable Long id, @RequestBody @Valid DutyRequest request) {
+        return dutyService.update(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        dutyService.delete(id);
     }
 
     @GetMapping("/today")
@@ -37,9 +54,9 @@ public class DutyController {
         return dutyService.getTodayDuty();
     }
 
-    @GetMapping("/next5")
-    public List<DutyResponse> getNext5() {
-        return dutyService.getNext5Days();
+    @GetMapping("/next3")
+    public List<DutyResponse> getNext3() {
+        return dutyService.getNext3Days();
     }
 
     @GetMapping("/message")

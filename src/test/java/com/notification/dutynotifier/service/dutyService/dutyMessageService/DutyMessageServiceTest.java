@@ -70,7 +70,7 @@ class DutyMessageServiceTest {
 
         when(dutyService.findTodayDuties()).thenReturn(List.of(todayDuty));
 
-        when(dutyService.findNext5DayDuties()).thenReturn(List.of(todayDuty, nextDuty));
+        when(dutyService.findNext3DayDuties()).thenReturn(List.of(todayDuty, nextDuty));
 
         String result = dutyMessageService.buildMessage();
 
@@ -78,6 +78,6 @@ class DutyMessageServiceTest {
         assertTrue(result.contains("Ivan"));
 
         verify(dutyService).findTodayDuties();
-        verify(dutyService).findNext5DayDuties();
+        verify(dutyService).findNext3DayDuties();
     }
 }

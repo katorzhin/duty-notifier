@@ -11,15 +11,22 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface DutyMapper {
 
-    @Mapping(target = "users",
-            expression = "java(mapUsers(duty))")
+    @Mapping(target = "users", expression = "java(mapUsers(duty))")
+    @Mapping(target = "userIds", expression = "java(mapUserIds(duty))")
+
     DutyResponse toResponse(Duty duty);
 
     default List<String> mapUsers(Duty duty) {
-
         return duty.getUsers()
                 .stream()
                 .map(User::getName)
+                .toList();
+    }
+
+    default List<Long> mapUserIds(Duty duty) {
+        return duty.getUsers()
+                .stream()
+                .map(User::getId)
                 .toList();
     }
 }

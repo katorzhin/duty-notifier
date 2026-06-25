@@ -6,16 +6,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface DutyRepository
-        extends JpaRepository<Duty, Long> {
+public interface DutyRepository extends JpaRepository<Duty, Long> {
 
     List<Duty> findByDutyDate(
             LocalDate dutyDate
     );
 
-    List<Duty> findByDutyDateBetween(
+    List<Duty> findByDutyDateBetweenOrderByDutyDateAsc(
             LocalDate start,
             LocalDate end
     );
+
+    boolean existsByUsers_Id(Long userId);
 
 }

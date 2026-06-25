@@ -17,4 +17,6 @@ public class DutyResponse {
     private LocalDate dutyDate;
 
     private List<String> users;
+
+    private List<Long> userIds;
 }

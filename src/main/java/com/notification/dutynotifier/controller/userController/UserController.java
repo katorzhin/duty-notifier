@@ -26,4 +26,17 @@ public class UserController {
     public List<UserResponse> getAll() {
         return userService.getAll();
     }
+
+    @PutMapping("/{id}")
+    public UserResponse update(
+            @PathVariable Long id,
+            @RequestBody @Valid UserRequest request
+    ) {
+        return userService.update(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        userService.delete(id);
+    }
 }

@@ -4,14 +4,18 @@ import com.notification.dutynotifier.dto.dutyRequest.DutyRequest;
 import com.notification.dutynotifier.dto.response.DutyResponse;
 import com.notification.dutynotifier.entity.duty.Duty;
 import com.notification.dutynotifier.entity.user.User;
+import com.notification.dutynotifier.exception.DutyNotFoundException;
 import com.notification.dutynotifier.exception.UserNotFoundException;
 import com.notification.dutynotifier.mapper.DutyMapper;
 import com.notification.dutynotifier.repository.dutyRepository.DutyRepository;
 import com.notification.dutynotifier.repository.userRepository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -31,9 +35,39 @@ public class DutyService {
                 .dutyDate(request.getDutyDate())
                 .build();
 
+        if (request.getUserIds().size() !=
+                new HashSet<>(request.getUserIds()).size()) {
+
+            throw new IllegalArgumentException("Duplicate users selected");
+        }
+
         Duty savedDuty = dutyRepository.save(duty);
 
         return dutyMapper.toResponse(savedDuty);
+    }
+
+    public DutyResponse update(Long id, DutyRequest request) {
+
+        Duty duty = dutyRepository.findById(id)
+                .orElseThrow(() -> new DutyNotFoundException("Duty not found"));
+
+        List<User> users = getUsers(request.getUserIds());
+
+        duty.setDutyDate(request.getDutyDate());
+        duty.setUsers(users);
+
+        Duty updatedDuty = dutyRepository.save(duty);
+
+        return dutyMapper.toResponse(updatedDuty);
+    }
+
+    public void delete(Long id) {
+
+        Duty duty = dutyRepository.findById(id)
+                .orElseThrow(() ->
+                        new DutyNotFoundException("Duty not found"));
+
+        dutyRepository.delete(duty);
     }
 
     private List<User> getUsers(List<Long> userIds) {
@@ -46,11 +80,10 @@ public class DutyService {
         return users;
     }
 
-    public List<DutyResponse> getAll() {
-        return dutyRepository.findAll()
-                .stream()
-                .map(dutyMapper::toResponse)
-                .toList();
+    public Page<DutyResponse> getAll(Pageable pageable) {
+        return dutyRepository
+                .findAll(pageable)
+                .map(dutyMapper::toResponse);
     }
 
     public List<DutyResponse> getTodayDuty() {
@@ -60,10 +93,10 @@ public class DutyService {
                 .toList();
     }
 
-    public List<DutyResponse> getNext5Days() {
-        return dutyRepository.findByDutyDateBetween(
-                        LocalDate.now(),
-                        LocalDate.now().plusDays(5))
+    public List<DutyResponse> getNext3Days() {
+        return dutyRepository.findByDutyDateBetweenOrderByDutyDateAsc(
+                        LocalDate.now().plusDays(1),
+                        LocalDate.now().plusDays(3))
                 .stream()
                 .map(dutyMapper::toResponse)
                 .toList();
@@ -75,10 +108,10 @@ public class DutyService {
         );
     }
 
-    public List<Duty> findNext5DayDuties() {
-        return dutyRepository.findByDutyDateBetween(
+    public List<Duty> findNext3DayDuties() {
+        return dutyRepository.findByDutyDateBetweenOrderByDutyDateAsc(
                 LocalDate.now(),
-                LocalDate.now().plusDays(5)
+                LocalDate.now().plusDays(3)
         );
     }
 }
