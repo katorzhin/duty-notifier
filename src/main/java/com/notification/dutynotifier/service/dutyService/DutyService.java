@@ -9,9 +9,11 @@ import com.notification.dutynotifier.exception.UserNotFoundException;
 import com.notification.dutynotifier.mapper.DutyMapper;
 import com.notification.dutynotifier.repository.dutyRepository.DutyRepository;
 import com.notification.dutynotifier.repository.userRepository.UserRepository;
+import com.notification.dutynotifier.specification.DutySpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -80,10 +82,21 @@ public class DutyService {
         return users;
     }
 
-    public Page<DutyResponse> getAll(Pageable pageable) {
-        return dutyRepository
-                .findAll(pageable)
-                .map(dutyMapper::toResponse);
+    public Page<DutyResponse> getAll(LocalDate from, LocalDate to,
+                                     List<Long> userIds, Pageable pageable) {
+
+        Specification<Duty> spec = Specification.allOf();
+
+        if (from != null && to != null) {
+            spec = spec.and(DutySpecification.dateBetween(from, to));
+        }
+
+        if (userIds != null && !userIds.isEmpty()) {
+
+            spec = spec.and(DutySpecification.hasUsers(userIds));
+        }
+
+        return dutyRepository.findAll(spec, pageable).map(dutyMapper::toResponse);
     }
 
     public List<DutyResponse> getTodayDuty() {

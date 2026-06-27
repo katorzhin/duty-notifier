@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -32,11 +33,23 @@ public class DutyController {
     }
 
     @GetMapping
-    public Page<DutyResponse> getAll(@PageableDefault(
-            sort = "dutyDate",
-            direction = Sort.Direction.DESC)
-                                     Pageable pageable) {
-        return dutyService.getAll(pageable);
+    public Page<DutyResponse> getAll(
+
+            @RequestParam(required = false)
+            LocalDate from,
+
+            @RequestParam(required = false)
+            LocalDate to,
+
+            @RequestParam(required = false)
+            List<Long> userIds,
+
+            @PageableDefault(
+                    sort = "dutyDate",
+                    direction = Sort.Direction.DESC)
+            Pageable pageable) {
+
+        return dutyService.getAll(from, to, userIds, pageable);
     }
 
     @PutMapping("/{id}")
