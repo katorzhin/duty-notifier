@@ -19,7 +19,7 @@ public class Subscriber {
     @Column(unique = true)
     private Long chatId;
 
-    private String username;
+    private String employeeName;
 
     private String firstName;
 

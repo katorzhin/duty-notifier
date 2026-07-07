@@ -16,7 +16,7 @@ public class DutyResponse {
 
     private LocalDate dutyDate;
 
-    private List<String> users;
+    private List<String> employees;
 
-    private List<Long> userIds;
+    private List<Long> employeeIds;
 }

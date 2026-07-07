@@ -1,7 +1,7 @@
 package com.notification.dutynotifier.service.dutyService.dutyMessageService;
 
 import com.notification.dutynotifier.entity.duty.Duty;
-import com.notification.dutynotifier.entity.user.User;
+import com.notification.dutynotifier.entity.employee.Employee;
 import com.notification.dutynotifier.service.dutyMessageService.DutyMessageService;
 import com.notification.dutynotifier.service.dutyService.DutyService;
 import org.junit.jupiter.api.Test;
@@ -29,12 +29,12 @@ class DutyMessageServiceTest {
     @Test
     void shouldBuildTodayMessage() {
 
-        User user = User.builder()
+        Employee employee = Employee.builder()
                 .name("Alex")
                 .build();
 
         Duty duty = Duty.builder()
-                .users(List.of(user))
+                .employees(List.of(employee))
                 .dutyDate(LocalDate.now())
                 .build();
 
@@ -50,22 +50,22 @@ class DutyMessageServiceTest {
     @Test
     void shouldBuildFullMessage() {
 
-        User alex = User.builder()
+        Employee alex = Employee.builder()
                 .name("Alex")
                 .build();
 
-        User ivan = User.builder()
+        Employee ivan = Employee.builder()
                 .name("Ivan")
                 .build();
 
         Duty todayDuty = Duty.builder()
                 .dutyDate(LocalDate.now())
-                .users(List.of(alex))
+                .employees(List.of(alex))
                 .build();
 
         Duty nextDuty = Duty.builder()
                 .dutyDate(LocalDate.now().plusDays(1))
-                .users(List.of(ivan))
+                .employees(List.of(ivan))
                 .build();
 
         when(dutyService.findTodayDuties()).thenReturn(List.of(todayDuty));

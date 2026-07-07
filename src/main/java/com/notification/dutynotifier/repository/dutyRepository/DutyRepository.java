@@ -9,15 +9,13 @@ import java.util.List;
 
 public interface DutyRepository extends JpaRepository<Duty, Long>, JpaSpecificationExecutor<Duty> {
 
-    List<Duty> findByDutyDate(
-            LocalDate dutyDate
+    List<Duty> findByDutyDate(LocalDate dutyDate);
+
+    List<Duty> findByDutyDateBetweenOrderByDutyDateAsc(LocalDate start,
+                                                       LocalDate end
     );
 
-    List<Duty> findByDutyDateBetweenOrderByDutyDateAsc(
-            LocalDate start,
-            LocalDate end
-    );
+    boolean existsByEmployees_Id(Long employeeId);
 
-    boolean existsByUsers_Id(Long userId);
 
 }

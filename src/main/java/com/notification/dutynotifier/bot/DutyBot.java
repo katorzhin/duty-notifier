@@ -79,7 +79,7 @@ public class DutyBot implements SpringLongPollingBot {
     private Subscriber buildSubscriber(Update update, Long chatId) {
         return Subscriber.builder()
                 .chatId(chatId)
-                .username(update.getMessage()
+                .employeeName(update.getMessage()
                         .getFrom()
                         .getUserName())
                 .firstName(update.getMessage().getFrom().getFirstName())

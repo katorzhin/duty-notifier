@@ -1,6 +1,6 @@
 package com.notification.dutynotifier.entity.duty;
 
-import com.notification.dutynotifier.entity.user.User;
+import com.notification.dutynotifier.entity.employee.Employee;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,10 +23,10 @@ public class Duty {
     private LocalDate dutyDate;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "duty_users", joinColumns =
+    @JoinTable(name = "duty_employees", joinColumns =
     @JoinColumn(name = "duty_id"),
             inverseJoinColumns =
-            @JoinColumn(name = "user_id")
+            @JoinColumn(name = "employee_id")
     )
-    private List<User> users;
+    private List<Employee> employees;
 }

@@ -1,15 +1,16 @@
-package com.notification.dutynotifier.dto.userRequest;
+package com.notification.dutynotifier.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class UserRequest {
-
-    @NotBlank
-    private String name;
+public class LoginRequest {
 
     @Email
+    @NotBlank
     private String email;
+
+    @NotBlank
+    private String password;
 }

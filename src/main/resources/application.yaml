@@ -18,6 +18,10 @@ spring:
 
     show-sql: true
 
+jwt:
+  secret:
+  expiration:
+
 telegram:
    bot:
     username: DutyPluuuuus_bot

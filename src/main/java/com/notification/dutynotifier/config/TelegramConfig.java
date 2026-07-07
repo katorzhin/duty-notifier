@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "telegram.bot")
 public class TelegramConfig {
 
-    private String username;
+    private String EmployeeName;
     private String token;
     private Long chatId;
 }

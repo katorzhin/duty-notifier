@@ -2,7 +2,7 @@ package com.notification.dutynotifier.mapper;
 
 import com.notification.dutynotifier.dto.response.DutyResponse;
 import com.notification.dutynotifier.entity.duty.Duty;
-import com.notification.dutynotifier.entity.user.User;
+import com.notification.dutynotifier.entity.employee.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -11,22 +11,22 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface DutyMapper {
 
-    @Mapping(target = "users", expression = "java(mapUsers(duty))")
-    @Mapping(target = "userIds", expression = "java(mapUserIds(duty))")
+    @Mapping(target = "employees", expression = "java(mapEmployees(duty))")
+    @Mapping(target = "employeeIds", expression = "java(mapEmployeeIds(duty))")
 
     DutyResponse toResponse(Duty duty);
 
-    default List<String> mapUsers(Duty duty) {
-        return duty.getUsers()
+    default List<String> mapEmployees(Duty duty) {
+        return duty.getEmployees()
                 .stream()
-                .map(User::getName)
+                .map(Employee::getName)
                 .toList();
     }
 
-    default List<Long> mapUserIds(Duty duty) {
-        return duty.getUsers()
+    default List<Long> mapEmployeeIds(Duty duty) {
+        return duty.getEmployees()
                 .stream()
-                .map(User::getId)
+                .map(Employee::getId)
                 .toList();
     }
 }

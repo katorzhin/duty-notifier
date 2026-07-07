@@ -11,7 +11,7 @@ import java.util.List;
 public class DutyRequest {
 
     @NotEmpty
-    private List<Long> userIds;
+    private List<Long> employeeIds;
 
     @NotNull
     private LocalDate dutyDate;

@@ -1,6 +1,6 @@
 package com.notification.dutynotifier.service.dutyMessageService;
 
-import com.notification.dutynotifier.entity.user.User;
+import com.notification.dutynotifier.entity.employee.Employee;
 import com.notification.dutynotifier.entity.duty.Duty;
 import com.notification.dutynotifier.service.dutyService.DutyService;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +28,10 @@ public class DutyMessageService {
 
         for (Duty duty : today) {
 
-            for (User user : duty.getUsers()) {
+            for (Employee employee : duty.getEmployees()) {
 
                 message.append("👤 ")
-                        .append(user.getName())
+                        .append(employee.getName())
                         .append("\n");
             }
         }
@@ -47,10 +47,10 @@ public class DutyMessageService {
 
             message.append(duty.getDutyDate().format(formatter)).append(" → ");
 
-            for (int i = 0; i < duty.getUsers().size(); i++) {
-                message.append(duty.getUsers().get(i).getName());
+            for (int i = 0; i < duty.getEmployees().size(); i++) {
+                message.append(duty.getEmployees().get(i).getName());
 
-                if (i < duty.getUsers().size() - 1) {
+                if (i < duty.getEmployees().size() - 1) {
                     message.append(", ");
                 }
             }
@@ -69,9 +69,9 @@ public class DutyMessageService {
         message.append("🔔 Сьогодні чергують:\n\n");
 
         for (Duty duty : today) {
-            for (User user : duty.getUsers()) {
+            for (Employee employee : duty.getEmployees()) {
                 message.append("👤 ")
-                        .append(user.getName())
+                        .append(employee.getName())
                         .append("\n");
             }
         }

@@ -2,13 +2,17 @@ package com.notification.dutynotifier.service.dutyService;
 
 import com.notification.dutynotifier.dto.dutyRequest.DutyRequest;
 import com.notification.dutynotifier.dto.response.DutyResponse;
+import com.notification.dutynotifier.entity.auditLog.AuditAction;
+import com.notification.dutynotifier.entity.auditLog.messages.DutyAuditMessages;
 import com.notification.dutynotifier.entity.duty.Duty;
-import com.notification.dutynotifier.entity.user.User;
+import com.notification.dutynotifier.entity.employee.Employee;
 import com.notification.dutynotifier.exception.DutyNotFoundException;
-import com.notification.dutynotifier.exception.UserNotFoundException;
+import com.notification.dutynotifier.exception.EmployeeNotFoundException;
 import com.notification.dutynotifier.mapper.DutyMapper;
 import com.notification.dutynotifier.repository.dutyRepository.DutyRepository;
-import com.notification.dutynotifier.repository.userRepository.UserRepository;
+import com.notification.dutynotifier.repository.employeeRepository.EmployeeRepository;
+import com.notification.dutynotifier.service.auditLogService.AuditLogService;
+import com.notification.dutynotifier.service.securityService.SecurityService;
 import com.notification.dutynotifier.specification.DutySpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,25 +29,33 @@ import java.util.List;
 public class DutyService {
 
     private final DutyRepository dutyRepository;
-    private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
     private final DutyMapper dutyMapper;
+    private final AuditLogService auditLogService;
+    private final SecurityService securityService;
 
     public DutyResponse create(DutyRequest request) {
 
-        List<User> users = getUsers(request.getUserIds());
+        List<Employee> employees = getEmployees(request.getEmployeeIds());
 
         Duty duty = Duty.builder()
-                .users(users)
+                .employees(employees)
                 .dutyDate(request.getDutyDate())
                 .build();
 
-        if (request.getUserIds().size() !=
-                new HashSet<>(request.getUserIds()).size()) {
+        if (request.getEmployeeIds().size() !=
+                new HashSet<>(request.getEmployeeIds()).size()) {
 
-            throw new IllegalArgumentException("Duplicate users selected");
+            throw new IllegalArgumentException("Duplicate employees selected");
         }
 
         Duty savedDuty = dutyRepository.save(duty);
+
+        auditLogService.log(
+                securityService.getCurrentUserEmail(),
+                AuditAction.DUTY_CREATED,
+                DutyAuditMessages.created(savedDuty)
+        );
 
         return dutyMapper.toResponse(savedDuty);
     }
@@ -53,12 +65,19 @@ public class DutyService {
         Duty duty = dutyRepository.findById(id)
                 .orElseThrow(() -> new DutyNotFoundException("Duty not found"));
 
-        List<User> users = getUsers(request.getUserIds());
+        String oldDuty = DutyAuditMessages.format(duty);
+        List<Employee> employees = getEmployees(request.getEmployeeIds());
 
         duty.setDutyDate(request.getDutyDate());
-        duty.setUsers(users);
+        duty.setEmployees(employees);
 
         Duty updatedDuty = dutyRepository.save(duty);
+
+        auditLogService.log(
+                securityService.getCurrentUserEmail(),
+                AuditAction.DUTY_UPDATED,
+                DutyAuditMessages.updated(oldDuty, updatedDuty)
+        );
 
         return dutyMapper.toResponse(updatedDuty);
     }
@@ -70,30 +89,41 @@ public class DutyService {
                         new DutyNotFoundException("Duty not found"));
 
         dutyRepository.delete(duty);
+
+        auditLogService.log(
+                securityService.getCurrentUserEmail(),
+                AuditAction.DUTY_DELETED,
+                DutyAuditMessages.deleted(duty)
+        );
     }
 
-    private List<User> getUsers(List<Long> userIds) {
-        List<User> users = userRepository.findAllById(userIds);
+    private List<Employee> getEmployees(List<Long> employeeIds) {
+        List<Employee> employees = employeeRepository.findAllById(employeeIds);
 
-        if (users.size() != userIds.size()) {
-            throw new UserNotFoundException("Some users were not found");
+        if (employees.size() != employeeIds.size()) {
+            throw new EmployeeNotFoundException("Some employees were not found");
         }
 
-        return users;
+        return employees;
     }
 
     public Page<DutyResponse> getAll(LocalDate from, LocalDate to,
-                                     List<Long> userIds, Pageable pageable) {
+                                     List<Long> employeeIds, Pageable pageable) {
 
         Specification<Duty> spec = Specification.allOf();
 
-        if (from != null && to != null) {
-            spec = spec.and(DutySpecification.dateBetween(from, to));
+
+        if (from != null) {
+            spec = spec.and(DutySpecification.dateFrom(from));
         }
 
-        if (userIds != null && !userIds.isEmpty()) {
+        if (to != null) {
+            spec = spec.and(DutySpecification.dateTo(to));
+        }
 
-            spec = spec.and(DutySpecification.hasUsers(userIds));
+        if (employeeIds != null && !employeeIds.isEmpty()) {
+
+            spec = spec.and(DutySpecification.hasEmployees(employeeIds));
         }
 
         return dutyRepository.findAll(spec, pageable).map(dutyMapper::toResponse);

@@ -1,17 +1,17 @@
-package com.notification.dutynotifier.entity.user;
+package com.notification.dutynotifier.entity.employee;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "users")
+@Table(name = "employees")
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Employee {
 
     @Id
     @GeneratedValue(strategy =

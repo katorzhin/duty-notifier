@@ -1,7 +1,7 @@
 package com.notification.dutynotifier.specification;
 
 import com.notification.dutynotifier.entity.duty.Duty;
-import com.notification.dutynotifier.entity.user.User;
+import com.notification.dutynotifier.entity.employee.Employee;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -10,21 +10,26 @@ import java.util.List;
 
 public class DutySpecification {
 
-    public static Specification<Duty> dateBetween(LocalDate from, LocalDate to) {
+    public static Specification<Duty> dateFrom(LocalDate from) {
         return (root, query, cb) ->
-                cb.between(root.get("dutyDate"), from, to);
+                cb.greaterThanOrEqualTo(root.get("dutyDate"), from);
     }
 
-    public static Specification<Duty> hasUsers(List<Long> userIds) {
+    public static Specification<Duty> dateTo(LocalDate to) {
+        return (root, query, cb) ->
+                cb.lessThanOrEqualTo(root.get("dutyDate"), to);
+    }
+
+    public static Specification<Duty> hasEmployees(List<Long> employeeIds) {
         return (root, query, cb) -> {
 
             if (query != null) {
                 query.distinct(true);
             }
 
-            Join<Duty, User> users = root.join("users");
+            Join<Duty, Employee> employees = root.join("employees");
 
-            return users.get("id").in(userIds);
+            return employees.get("id").in(employeeIds);
         };
     }
 }
