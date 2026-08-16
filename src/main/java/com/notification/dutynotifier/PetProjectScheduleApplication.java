@@ -9,9 +9,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class PetProjectScheduleApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(
-                PetProjectScheduleApplication.class,
-                args
-        );
+        SpringApplication.run(PetProjectScheduleApplication.class, args);
     }
 }

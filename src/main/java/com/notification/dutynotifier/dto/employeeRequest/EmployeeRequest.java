@@ -1,5 +1,6 @@
 package com.notification.dutynotifier.dto.employeeRequest;
 
+import com.notification.dutynotifier.entity.employee.EmployeeStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -12,4 +13,6 @@ public class EmployeeRequest {
 
     @Email
     private String email;
+
+    private EmployeeStatus status;
 }

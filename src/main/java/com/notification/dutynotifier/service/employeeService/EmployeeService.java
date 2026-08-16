@@ -5,12 +5,13 @@ import com.notification.dutynotifier.dto.employeeRequest.EmployeeRequest;
 import com.notification.dutynotifier.entity.auditLog.AuditAction;
 import com.notification.dutynotifier.entity.auditLog.messages.EmployeeAuditMessages;
 import com.notification.dutynotifier.entity.employee.Employee;
+import com.notification.dutynotifier.entity.employee.EmployeeStatus;
 import com.notification.dutynotifier.exception.EmployeeNotFoundException;
 import com.notification.dutynotifier.mapper.EmployeeMapper;
 import com.notification.dutynotifier.repository.dutyRepository.DutyRepository;
 import com.notification.dutynotifier.repository.employeeRepository.EmployeeRepository;
 import com.notification.dutynotifier.service.auditLogService.AuditLogService;
-import com.notification.dutynotifier.service.securityService.SecurityService;
+import com.notification.dutynotifier.service.securityService.AuthenticatedUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,16 +25,17 @@ public class EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final DutyRepository dutyRepository;
     private final AuditLogService auditLogService;
-    private final SecurityService securityService;
+    private final AuthenticatedUserService authenticatedUserService;
 
     public EmployeeResponse create(EmployeeRequest request) {
 
         Employee employee = employeeMapper.toEntity(request);
+        employee.setStatus(EmployeeStatus.ACTIVE);
 
         Employee savedEmployee = employeeRepository.save(employee);
 
         auditLogService.log(
-                securityService.getCurrentUserEmail(),
+                authenticatedUserService.getCurrentUserEmail(),
                 AuditAction.EMPLOYEE_CREATED,
                 EmployeeAuditMessages.created(savedEmployee)
         );
@@ -58,11 +60,12 @@ public class EmployeeService {
 
         employee.setName(request.getName());
         employee.setEmail(request.getEmail());
+        employee.setStatus(request.getStatus());
 
         Employee updatedEmployee = employeeRepository.save(employee);
 
         auditLogService.log(
-                securityService.getCurrentUserEmail(),
+                authenticatedUserService.getCurrentUserEmail(),
                 AuditAction.EMPLOYEE_UPDATED,
                 EmployeeAuditMessages.updated(oldEmployee, updatedEmployee)
         );
@@ -83,7 +86,7 @@ public class EmployeeService {
         employeeRepository.delete(employee);
 
         auditLogService.log(
-                securityService.getCurrentUserEmail(),
+                authenticatedUserService.getCurrentUserEmail(),
                 AuditAction.EMPLOYEE_DELETED,
                 EmployeeAuditMessages.deleted(employee)
         );

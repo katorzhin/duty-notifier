@@ -1,5 +1,6 @@
 package com.notification.dutynotifier.dto.response;
 
+import com.notification.dutynotifier.entity.employee.EmployeeStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,4 +15,6 @@ public class EmployeeResponse {
     private String name;
 
     private String email;
+
+    private EmployeeStatus status;
 }

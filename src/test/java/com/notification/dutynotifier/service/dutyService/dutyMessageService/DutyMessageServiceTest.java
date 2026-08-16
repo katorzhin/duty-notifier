@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,7 +41,7 @@ class DutyMessageServiceTest {
 
         when(dutyService.findTodayDuties()).thenReturn(List.of(duty));
 
-        String result = dutyMessageService.buildTodayMessage();
+        String result = dutyMessageService.buildTodayMessage("{{TODAY}}");
 
         assertTrue(result.contains("Alex"));
 
@@ -48,11 +49,7 @@ class DutyMessageServiceTest {
     }
 
     @Test
-    void shouldBuildFullMessage() {
-
-        Employee alex = Employee.builder()
-                .name("Alex")
-                .build();
+    void shouldBuildScheduleMessage() {
 
         Employee ivan = Employee.builder()
                 .name("Ivan")
@@ -60,7 +57,7 @@ class DutyMessageServiceTest {
 
         Duty todayDuty = Duty.builder()
                 .dutyDate(LocalDate.now())
-                .employees(List.of(alex))
+                .employees(List.of(ivan))
                 .build();
 
         Duty nextDuty = Duty.builder()
@@ -68,16 +65,18 @@ class DutyMessageServiceTest {
                 .employees(List.of(ivan))
                 .build();
 
-        when(dutyService.findTodayDuties()).thenReturn(List.of(todayDuty));
+        when(dutyService.findNext3DayDuties())
+                .thenReturn(List.of(todayDuty, nextDuty));
 
-        when(dutyService.findNext3DayDuties()).thenReturn(List.of(todayDuty, nextDuty));
+        String result = dutyMessageService.buildScheduleMessage("""
+            📅 Наступні чергування:
+            
+            {{NEXT_DUTIES}}
+            """);
 
-        String result = dutyMessageService.buildMessage();
-
-        assertTrue(result.contains("Alex"));
         assertTrue(result.contains("Ivan"));
+        assertFalse(result.contains("{{NEXT_DUTIES}}"));
 
-        verify(dutyService).findTodayDuties();
         verify(dutyService).findNext3DayDuties();
     }
 }

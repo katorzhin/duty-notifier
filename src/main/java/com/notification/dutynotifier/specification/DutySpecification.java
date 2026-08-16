@@ -32,4 +32,8 @@ public class DutySpecification {
             return employees.get("id").in(employeeIds);
         };
     }
+
+    public static Specification<Duty> dateBetween(LocalDate from, LocalDate to) {
+        return Specification.allOf(dateFrom(from), dateTo(to));
+    }
 }

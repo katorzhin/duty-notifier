@@ -4,11 +4,14 @@ import com.notification.dutynotifier.dto.dutyRequest.DutyRequest;
 import com.notification.dutynotifier.dto.response.DutyResponse;
 import com.notification.dutynotifier.entity.duty.Duty;
 import com.notification.dutynotifier.entity.employee.Employee;
+import com.notification.dutynotifier.entity.employee.EmployeeStatus;
 import com.notification.dutynotifier.exception.EmployeeNotFoundException;
 import com.notification.dutynotifier.mapper.DutyMapper;
 import com.notification.dutynotifier.repository.dutyRepository.DutyRepository;
 import com.notification.dutynotifier.repository.employeeRepository.EmployeeRepository;
+import com.notification.dutynotifier.service.auditLogService.AuditLogService;
 import com.notification.dutynotifier.service.dutyService.DutyService;
+import com.notification.dutynotifier.service.securityService.AuthenticatedUserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,6 +42,12 @@ class DutyServiceTest {
     @InjectMocks
     private DutyService dutyService;
 
+    @Mock
+    private  AuditLogService auditLogService;
+
+    @Mock
+    private  AuthenticatedUserService authenticatedUserService;
+
     @Test
     void shouldCreateDutySuccessfully() {
         DutyRequest request = new DutyRequest();
@@ -50,6 +59,7 @@ class DutyServiceTest {
                 .id(1L)
                 .name("Alex")
                 .email("alex@gmail.com")
+                .status(EmployeeStatus.ACTIVE)
                 .build();
 
         Duty duty = Duty.builder()
@@ -68,6 +78,8 @@ class DutyServiceTest {
         when(dutyRepository.save(any(Duty.class))).thenReturn(duty);
 
         when(dutyMapper.toResponse(duty)).thenReturn(response);
+        when(authenticatedUserService.getCurrentUserEmail())
+                .thenReturn("alex@gmail.com");
 
         DutyResponse result = dutyService.create(request);
 

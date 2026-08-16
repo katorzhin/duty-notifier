@@ -16,66 +16,66 @@ public class DutyMessageService {
 
     private final DutyService dutyService;
 
-    public String buildMessage() {
+    public String buildTodayMessage(String template) {
 
-        List<Duty> today = dutyService.findTodayDuties();
+        return template.replace(
+                "{{TODAY}}",
+                buildTodayDuties()
+        );
+    }
+
+    public String buildScheduleMessage(String template) {
+        return template.replace(
+                "{{NEXT_DUTIES}}",
+                buildUpcomingDuties()
+        );
+    }
+
+    private String buildUpcomingDuties() {
+
         List<Duty> next = dutyService.findNext3DayDuties();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-        StringBuilder message = new StringBuilder();
-        message.append("🔔 Сьогодні чергують:\n\n");
-
-        for (Duty duty : today) {
-
-            for (Employee employee : duty.getEmployees()) {
-
-                message.append("👤 ")
-                        .append(employee.getName())
-                        .append("\n");
-            }
-        }
-
-        message.append("\n📅 Наступні чергування:\n\n");
+        StringBuilder result = new StringBuilder();
 
         for (Duty duty : next) {
 
-            if (duty.getDutyDate()
-                    .equals(LocalDate.now())) {
+            if (duty.getDutyDate().equals(LocalDate.now())) {
                 continue;
             }
 
-            message.append(duty.getDutyDate().format(formatter)).append(" → ");
+            result.append(duty.getDutyDate().format(formatter)).append(" → ");
 
             for (int i = 0; i < duty.getEmployees().size(); i++) {
-                message.append(duty.getEmployees().get(i).getName());
+
+                result.append(duty.getEmployees().get(i).getName());
 
                 if (i < duty.getEmployees().size() - 1) {
-                    message.append(", ");
+                    result.append(", ");
                 }
             }
-            message.append("\n");
+
+            result.append("\n");
         }
 
-        return message.toString();
+        return result.toString();
     }
 
-    public String buildTodayMessage() {
+    private String buildTodayDuties() {
 
         List<Duty> today = dutyService.findTodayDuties();
 
-        StringBuilder message = new StringBuilder();
-
-        message.append("🔔 Сьогодні чергують:\n\n");
+        StringBuilder result = new StringBuilder();
 
         for (Duty duty : today) {
             for (Employee employee : duty.getEmployees()) {
-                message.append("👤 ")
+                result.append("👤 ")
                         .append(employee.getName())
                         .append("\n");
             }
         }
 
-        return message.toString();
+        return result.toString();
     }
 }

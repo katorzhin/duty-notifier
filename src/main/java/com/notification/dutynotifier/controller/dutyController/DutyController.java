@@ -1,9 +1,11 @@
 package com.notification.dutynotifier.controller.dutyController;
 
 import com.notification.dutynotifier.dto.dutyRequest.DutyRequest;
+import com.notification.dutynotifier.dto.dutyRequest.GenerateDutyRequest;
 import com.notification.dutynotifier.dto.response.DutyResponse;
 import com.notification.dutynotifier.service.dutyMessageService.DutyMessageService;
 import com.notification.dutynotifier.service.dutyService.DutyService;
+import com.notification.dutynotifier.service.notificationTemplateService.NotificationTemplateService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ public class DutyController {
 
     private final DutyService dutyService;
     private final DutyMessageService dutyMessageService;
+    private final NotificationTemplateService notificationTemplateService;
 
     @PostMapping
     public DutyResponse create(@RequestBody @Valid DutyRequest request) {
@@ -70,7 +73,15 @@ public class DutyController {
 
     @GetMapping("/message")
     public String message() {
-        return dutyMessageService.buildMessage();
+        return dutyMessageService.buildScheduleMessage(
+                notificationTemplateService
+                        .getTemplate()
+                        .getScheduleTemplate()
+        );
     }
 
+    @PostMapping("/generate")
+    public void generate(@RequestBody @Valid GenerateDutyRequest request) {
+        dutyService.generate(request);
+    }
 }

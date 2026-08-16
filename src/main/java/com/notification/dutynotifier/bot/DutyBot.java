@@ -47,9 +47,7 @@ public class DutyBot implements SpringLongPollingBot {
                     String text = update.getMessage().getText();
 
                     if (subscriberRepository.findByChatId(chatId).isEmpty()) {
-
                         subscriberRepository.save(buildSubscriber(update, chatId));
-
                         log.info("New subscriber registered. chatId={}", chatId);
                     }
                     String response = botCommandService.processCommand(text);
@@ -62,7 +60,6 @@ public class DutyBot implements SpringLongPollingBot {
     }
 
     public void sendMessage(Long chatId, String text) {
-
         SendMessage message = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
@@ -72,7 +69,6 @@ public class DutyBot implements SpringLongPollingBot {
             telegramClient.execute(message);
         } catch (Exception e) {
             log.error("Failed to send telegram message to chatId={}", chatId, e);
-            throw new RuntimeException(e);
         }
     }
 

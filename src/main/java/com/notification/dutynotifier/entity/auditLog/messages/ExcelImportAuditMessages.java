@@ -12,4 +12,11 @@ public final class ExcelImportAuditMessages {
                 Replaced: %d
                 """.formatted(fileName, created, replaced);
     }
+
+    public static String failed(String fileName, String reason) {
+        return "Schedule upload failed for file: "
+                + fileName
+                + ". Reason: "
+                + reason;
+    }
 }
