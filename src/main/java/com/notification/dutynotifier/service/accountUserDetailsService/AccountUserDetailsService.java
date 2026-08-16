@@ -1,10 +1,9 @@
 package com.notification.dutynotifier.service.accountUserDetailsService;
 
-import com.notification.dutynotifier.entity.account.Account;
-import com.notification.dutynotifier.repository.accountRepository.AccountRepository;
-import com.notification.dutynotifier.security.AccountUserDetails;
+import com.notification.dutynotifier.entity.user.User;
+import com.notification.dutynotifier.repository.accountRepository.UserRepository;
+import com.notification.dutynotifier.security.UserDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -13,16 +12,16 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AccountUserDetailsService implements UserDetailsService {
 
-    private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        Account account = accountRepository
+        User user = userRepository
                         .findByEmail(email)
                         .orElseThrow(() ->
                                 new UsernameNotFoundException(email));
 
-        return new AccountUserDetails(account);
+        return new UserDetails(user);
     }
 }

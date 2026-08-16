@@ -1,6 +1,7 @@
 package com.notification.dutynotifier.bot;
 
 import com.notification.dutynotifier.service.dutyMessageService.DutyMessageService;
+import com.notification.dutynotifier.service.notificationTemplateService.NotificationTemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 public class BotCommandService {
 
     private final DutyMessageService dutyMessageService;
+    private final NotificationTemplateService notificationTemplateService;
 
     public String processCommand(String command) {
 
@@ -16,9 +18,15 @@ public class BotCommandService {
 
             case "/start" -> BotMessages.START_MESSAGE;
 
-            case "/schedule" -> dutyMessageService.buildMessage();
+            case "/schedule" -> dutyMessageService.buildScheduleMessage(
+                    notificationTemplateService
+                            .getTemplate()
+                            .getScheduleTemplate());
 
-            case "/today" -> dutyMessageService.buildTodayMessage();
+            case "/today" -> dutyMessageService.buildTodayMessage(
+                    notificationTemplateService
+                            .getTemplate()
+                            .getTodayTemplate());
 
             case "/help" -> BotMessages.HELP_MESSAGE;
 

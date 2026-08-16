@@ -11,9 +11,7 @@ public interface DutyRepository extends JpaRepository<Duty, Long>, JpaSpecificat
 
     List<Duty> findByDutyDate(LocalDate dutyDate);
 
-    List<Duty> findByDutyDateBetweenOrderByDutyDateAsc(LocalDate start,
-                                                       LocalDate end
-    );
+    List<Duty> findByDutyDateBetweenOrderByDutyDateAsc(LocalDate start, LocalDate end);
 
     boolean existsByEmployees_Id(Long employeeId);
 
