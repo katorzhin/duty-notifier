@@ -5,11 +5,14 @@ import com.notification.dutynotifier.entity.auditLog.messages.ExcelImportAuditMe
 import com.notification.dutynotifier.entity.employee.Employee;
 import com.notification.dutynotifier.entity.duty.Duty;
 import com.notification.dutynotifier.exception.DutyConflictException;
+import com.notification.dutynotifier.exception.EmployeesNotFoundException;
 import com.notification.dutynotifier.repository.employeeRepository.EmployeeRepository;
 import com.notification.dutynotifier.repository.dutyRepository.DutyRepository;
 import com.notification.dutynotifier.service.auditLogService.AuditLogService;
-import com.notification.dutynotifier.service.securityService.SecurityService;
+import com.notification.dutynotifier.service.securityService.AuthenticatedUserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -20,9 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExcelImportService {
@@ -30,7 +34,7 @@ public class ExcelImportService {
     private final DutyRepository dutyRepository;
     private final EmployeeRepository employeeRepository;
     private final AuditLogService auditLogService;
-    private final SecurityService securityService;
+    private final AuthenticatedUserService authenticatedUserService;
 
     @Transactional
     public void importExcel(MultipartFile file, boolean replace) {
@@ -39,13 +43,27 @@ public class ExcelImportService {
              XSSFWorkbook workbook = new XSSFWorkbook(inputStream)) {
 
             Sheet sheet = workbook.getSheetAt(0);
+
+            Map<String, Employee> employeeMap =
+                    employeeRepository.findAll()
+                            .stream()
+                            .collect(Collectors.toMap(
+                                    Employee::getName,
+                                    employee -> employee
+                            ));
+
+            List<String> missingEmployees = validateEmployees(sheet, employeeMap);
+
+            if (!missingEmployees.isEmpty()) {
+                throw new EmployeesNotFoundException(missingEmployees);
+            }
             List<LocalDate> conflicts = new ArrayList<>();
             int created = 0;
             int replaced = 0;
 
             for (Row row : sheet) {
 
-                if (isEmptyRow(row)) {
+                if (row.getRowNum() == 0 || isEmptyRow(row)) {
                     continue;
                 }
 
@@ -64,7 +82,7 @@ public class ExcelImportService {
                     replaced += existingDuties.size();
                 }
 
-                Duty duty = buildDuty(row);
+                Duty duty = buildDuty(row, employeeMap);
 
                 dutyRepository.save(duty);
                 created++;
@@ -75,15 +93,28 @@ public class ExcelImportService {
             }
 
             auditLogService.log(
-                    securityService.getCurrentUserEmail(),
+                    authenticatedUserService.getCurrentUserEmail(),
                     AuditAction.SCHEDULE_UPLOADED,
                     ExcelImportAuditMessages.uploaded(
                             file.getOriginalFilename(), created, replaced));
 
-        } catch (DutyConflictException e) {
+        } catch (DutyConflictException | EmployeesNotFoundException e) {
+            log.warn("Schedule upload rejected for file: {}. {}",
+                    file.getOriginalFilename(), e.getMessage());
+            auditLogService.logFailed(
+                    authenticatedUserService.getCurrentUserEmail(),
+                    AuditAction.SCHEDULE_UPLOAD_FAILED,
+                    ExcelImportAuditMessages.failed(file.getOriginalFilename(), e.getMessage()));
             throw e;
 
         } catch (Exception e) {
+            log.error("Failed to import schedule from file {}", file.getOriginalFilename(), e);
+
+            auditLogService.logFailed(
+                    authenticatedUserService.getCurrentUserEmail(),
+                    AuditAction.SCHEDULE_UPLOAD_FAILED,
+                    ExcelImportAuditMessages.failed(file.getOriginalFilename(), e.getMessage()));
+
             throw new RuntimeException("Failed to import excel", e);
         }
     }
@@ -96,35 +127,90 @@ public class ExcelImportService {
                 .toLocalDate();
     }
 
-    private Employee getOrCreateEmployee(String employeeName) {
-        return employeeRepository.findByName(employeeName)
-                .orElseGet(() -> employeeRepository
-                        .save(Employee.builder()
-                                .name(employeeName)
-                                .build()));
+    private Employee getEmployee(String employeeName, Map<String, Employee> employees) {
+        return employees.get(employeeName);
     }
 
-    private Duty buildDuty(Row row) {
+    private Duty buildDuty(Row row,
+                           Map<String, Employee> employeeMap) {
+
         LocalDate dutyDate = extractDate(row);
 
-        Employee firstEmployee = getOrCreateEmployee(row.getCell(1)
-                .getStringCellValue()
-                .trim());
+        List<Employee> employees = new ArrayList<>();
 
-        Employee secondEmployee = getOrCreateEmployee(row.getCell(2)
-                .getStringCellValue()
-                .trim());
+        for (int cellIndex = 1;
+             cellIndex < row.getLastCellNum();
+             cellIndex++) {
+
+            if (row.getCell(cellIndex) == null) {
+                continue;
+            }
+
+            String employeeName = row.getCell(cellIndex)
+                    .getStringCellValue()
+                    .trim();
+
+            if (employeeName.isEmpty()) {
+                continue;
+            }
+
+            employees.add(getEmployee(employeeName, employeeMap));
+        }
+
+        if (employees.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "At least one employee is required"
+            );
+        }
 
         return Duty.builder()
                 .dutyDate(dutyDate)
-                .employees(List.of(firstEmployee, secondEmployee))
+                .employees(employees)
                 .build();
+    }
+
+    private List<String> validateEmployees(
+            Sheet sheet,
+            Map<String, Employee> employeeMap
+    ) {
+
+
+        Set<String> missingEmployees = new LinkedHashSet<>();
+
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0 || isEmptyRow(row)) {
+                continue;
+            }
+
+            for (int cellIndex = 1;
+                 cellIndex < row.getLastCellNum();
+                 cellIndex++) {
+
+                if (row.getCell(cellIndex) == null) {
+                    continue;
+                }
+
+                String employeeName = row.getCell(cellIndex)
+                        .getStringCellValue()
+                        .trim();
+
+                if (employeeName.isEmpty()) {
+                    continue;
+                }
+
+                if (!employeeMap.containsKey(employeeName)) {
+                    missingEmployees.add(employeeName);
+                }
+            }
+        }
+
+        return new ArrayList<>(missingEmployees);
     }
 
     private boolean isEmptyRow(Row row) {
         if (row.getCell(0) == null) {
             return true;
         }
-        return row.getCell(0).getCellType().name().equals("BLANK");
+        return row.getCell(0).getCellType() == CellType.BLANK;
     }
 }
